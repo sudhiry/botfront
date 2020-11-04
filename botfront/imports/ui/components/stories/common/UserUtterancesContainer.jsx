@@ -8,8 +8,10 @@ import { ProjectContext } from '../../../layouts/context';
 
 const UserUtterancesContainer = (props) => {
     const {
-        deletable, value, onChange, onDelete,
+        deletable, value, onChange, onDelete, editable: initialEditable,
     } = props;
+    const editable = initialEditable; // EE adds permission check here
+
     const { addUtterancesToTrainingData } = useContext(ProjectContext);
 
     const somethingIsBeingInput = useMemo(() => value.some(disjunct => disjunct === null), [value]);
@@ -75,10 +77,10 @@ const UserUtterancesContainer = (props) => {
                     onAbort={() => { if (value.length > 1) handleDeleteDisjunct(index); }}
                     onDelete={() => { handleDeleteDisjunct(index); }}
                 />
-                {payload && index !== value.length - 1 && (
+                {payload && editable && index !== value.length - 1 && (
                     <IconButton icon='add' className='or-label' color='vk' />
                 )}
-                {!somethingIsBeingInput && index === value.length - 1 && (
+                {editable && !somethingIsBeingInput && index === value.length - 1 && (
                     <UserUtterancePopupContent
                         trigger={<IconButton icon='add' className='or-icon-button' />}
                         onCreateFromInput={() => handleInsertDisjunct(index)}
@@ -86,6 +88,7 @@ const UserUtterancesContainer = (props) => {
                     />
                 )}
                 {deletable
+                    && editable
                     && (!somethingIsBeingInput || !payload)
                     && value.length > 1 && (
                     <IconButton
@@ -101,7 +104,7 @@ const UserUtterancesContainer = (props) => {
         <div className='utterances-container exception-wrapper-target'>
             {value.map(renderResponse)}
             <div className='side-by-side right narrow top-right'>
-                {deletable && onDelete && <IconButton onClick={onDelete} icon='trash' />}
+                {deletable && onDelete && editable && <IconButton onClick={onDelete} icon='trash' />}
             </div>
         </div>
     );
@@ -112,12 +115,14 @@ UserUtterancesContainer.propTypes = {
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func,
     onDelete: PropTypes.func,
+    editable: PropTypes.bool,
 };
 
 UserUtterancesContainer.defaultProps = {
     deletable: true,
     onChange: () => {},
     onDelete: null,
+    editable: true,
 };
 
 export default UserUtterancesContainer;
