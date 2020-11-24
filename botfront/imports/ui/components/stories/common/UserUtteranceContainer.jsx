@@ -9,6 +9,34 @@ import { ProjectContext } from '../../../layouts/context';
 import UtteranceInput from '../../utils/UtteranceInput';
 import NluModalContent from './nlu_editor/NluModalContent';
 
+const parseEntity = (entity) => {
+    const {
+        value, entity: name, start, end,
+    } = entity;
+    if (name && value && (start || start === 0) && (end || end === 0)) {
+        return entity;
+    }
+    return {
+        entity: Object.keys(entity)[0],
+        value: entity[Object.keys(entity)[0]],
+    };
+};
+
+const convertUserToText = ({ user, entities, ...payload } = {}) => ({
+    ...payload,
+    ...(user ? { text: user } : {}),
+    ...(entities
+        ? {
+            entities: entities.map(parseEntity),
+        }
+        : {}),
+});
+const convertTextToUser = ({ text, entities, ...payload } = {}) => ({
+    ...payload,
+    ...(text ? { user: text } : {}),
+    ...(entities ? { entities: entities.map(({ entity: k, value: v }) => ({ [k]: v })) } : {}),
+});
+
 const UtteranceContainer = (props) => {
     const {
         value, onInput, onAbort, onDelete,
